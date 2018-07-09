@@ -1,83 +1,83 @@
-'use strict'
+'use strict';
 
-import React from 'react'
-import store from 'Redux/store'
-import Immutable from 'immutable'
-import {remote} from 'electron'
-import fs from 'fs'
+import React from 'react';
+import store from 'Redux/store';
+import Immutable from 'immutable';
+import {remote} from 'electron';
+import fs from 'fs';
 
-require('./index.scss')
+require('./index.scss');
 
 class Config extends React.PureComponent {
   constructor() {
-    super()
+    super();
     this.state = {
       data: new Immutable.Map()
-    }
+    };
   }
 
   getProp(property) {
     if (this.state.data.has(property)) {
-      return this.state.data.get(property)
+      return this.state.data.get(property);
     }
-    return this.props.favorite ? this.props.favorite.get(property) : ''
+    return this.props.favorite ? this.props.favorite.get(property) : '';
   }
 
   setProp(property, value) {
     this.setState({
       data: typeof property === 'string' ? this.state.data.set(property, value) : this.state.data.merge(property),
       changed: Boolean(this.props.favorite)
-    })
+    });
   }
 
   componentWillReceiveProps(nextProps) {
     if (!this.props.connect && nextProps.connect) {
-      this.connect()
+      this.connect();
     }
     if (this.props.favorite || nextProps.favorite) {
       const leaving = !this.props.favorite || !nextProps.favorite ||
-        (this.props.favorite.get('key') !== nextProps.favorite.get('key'))
+        (this.props.favorite.get('key') !== nextProps.favorite.get('key'));
       if (leaving) {
-        this.setState({changed: false, data: new Immutable.Map()})
+        this.setState({changed: false, data: new Immutable.Map()});
       }
     }
   }
 
   connect() {
-    const {favorite, connectToRedis} = this.props
-    const data = this.state.data
-    const config = favorite ? favorite.merge(data).toJS() : data.toJS()
-    config.host = config.host || 'localhost'
-    config.port = config.port || '6379'
-    config.sshPort = config.sshPort || '22'
-    connectToRedis(config)
-    this.save()
+    const {favorite, connectToRedis} = this.props;
+    const data = this.state.data;
+    const config = favorite ? favorite.merge(data).toJS() : data.toJS();
+    config.host = config.host || 'localhost';
+    config.port = config.port || '6379';
+    config.sshPort = config.sshPort || '22';
+    connectToRedis(config);
+    this.save();
   }
 
   handleChange(property, e) {
-    let value = e.target.value
+    let value = e.target.value;
     if (property === 'ssh' || property === 'ssl') {
-      value = e.target.checked
+      value = e.target.checked;
     }
-    this.setProp(property, value)
+    this.setProp(property, value);
   }
 
   duplicate() {
     if (this.props.favorite) {
-      const data = Object.assign(this.props.favorite.toJS(), this.state.data.toJS())
-      delete data.key
-      this.props.onDuplicate(data)
+      const data = Object.assign(this.props.favorite.toJS(), this.state.data.toJS());
+      delete data.key;
+      this.props.onDuplicate(data);
     } else {
-      const data = this.state.data.toJS()
-      data.name = 'Quick Connect'
-      this.props.onDuplicate(data)
+      const data = this.state.data.toJS();
+      data.name = 'Quick Connect';
+      this.props.onDuplicate(data);
     }
   }
 
   save() {
     if (this.props.favorite && this.state.changed) {
-      this.props.onSave(this.state.data.toJS())
-      this.setState({changed: false, data: new Immutable.Map()})
+      this.props.onSave(this.state.data.toJS());
+      this.setState({changed: false, data: new Immutable.Map()});
     }
   }
 
@@ -197,7 +197,8 @@ class Config extends React.PureComponent {
           className="nt-button" style={{float: 'left'}} onClick={() => {
             this.duplicate()
           }}
-                                                        >{ this.props.favorite ? 'Duplicate' : 'Add to Favorite' }</button>
+                                                        >{ this.props.favorite ? 'Duplicate' : 'Add to Favorite' }
+        </button>
         <button
           className="nt-button"
           style={{display: this.state.changed ? 'inline-block' : 'none'}}
